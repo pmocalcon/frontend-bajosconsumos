@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Procesamiento de Informes</title>
+  <link rel="stylesheet" href="./static/style.css">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script>
+    $(document).ready(function(){
+      // Manejo del preloader
+      if (!sessionStorage.getItem('preloaderShown')){
+        setTimeout(function(){
+          $("#preloader").fadeOut(500, function() {
+            $("#main-content").fadeIn(500);
+          });
+          sessionStorage.setItem('preloaderShown', 'true');
+        }, 2000);
+      } else {
+        $("#preloader").hide();
+        $("#main-content").show();
+      }
+
+      // Manejo del overlay de progreso
+      $("form").on("submit", function(){
+        $("#progress-overlay").fadeIn(200);
+      });
+
+      // Cerrar overlay al completar
+      $(window).on('focus', function(){
+        $("#progress-overlay").fadeOut(200);
+      });
+
+      // Manejo de formularios AJAX
+      $("form.ajax-form").on("submit", function(e) {
+        e.preventDefault();
+        var $form = $(this);
+        $("#resultado").html("<p class='processing-message'>Procesando, por favor espere...</p>");
+        
+        $.ajax({
+          type: $form.attr("method"),
+          url: $form.attr("action"),
+          data: $form.serialize(),
+          success: function(response) {
+            var mensaje = response.mensaje || "Operación completada.";
+            $("#resultado").html("<p class='success-message'>" + mensaje + "</p>");
+            $("#progress-overlay").fadeOut(200);
+            $('html, body').animate({ scrollTop: $("#resultado").offset().top }, 'slow');
+          },
+          error: function(xhr) {
+            var errorMsg = (xhr.responseJSON && xhr.responseJSON.mensaje) ? xhr.responseJSON.mensaje : "Error desconocido";
+            $("#resultado").html("<p class='error-message'>Error: " + errorMsg + "</p>");
+            $("#progress-overlay").fadeOut(200);
+          }
+        });
+      });
+
+      // Actualizar campos ocultos y guardar en localStorage (para el menú global y para la sección mensual)
+      // En el menú principal (solo municipio se usa)
+      $("#municipio").on("change", function(){
+        var selectedMunicipio = $(this).val();
+        $(".hidden-municipio").val(selectedMunicipio);
+        localStorage.setItem('selectedMunicipio', selectedMunicipio);
+      });
+      
+      // Para los selects de categoría dentro de cada sección donde se requiere:
+      $(".analysis-category").on("change", function(){
+        var selectedCategory = $(this).val();
+        $(".hidden-category").val(selectedCategory);
+        localStorage.setItem('selectedCategory', selectedCategory);
+        updateAnalysisCards(selectedCategory.toLowerCase());
+      });
+      
+      // Actualizar global_tipo (si se usa)
+      $("#global_tipo").on("change", function(){
+        var selectedTipo = $(this).val();
+        $(".global-tipo").val(selectedTipo);
+        localStorage.setItem('selectedTipo', selectedTipo);
+      });
+
+      // Valores iniciales
+      var initialMunicipio = $("#municipio").val();
+      $(".hidden-municipio").val(initialMunicipio);
+      var initialCategory = $(".analysis-category").first().val();
+      $(".hidden-category").val(initialCategory);
+      var initialTipo = $("#global_tipo").val();
+      $(".global-tipo").val(initialTipo);
+
+      // Recuperar de localStorage
+      var savedMunicipio = localStorage.getItem('selectedMunicipio');
+      if(savedMunicipio){
+        $("#municipio").val(savedMunicipio);
+        $(".hidden-municipio").val(savedMunicipio);
+      } else {
+        localStorage.setItem('selectedMunicipio', initialMunicipio);
+      }
+      var savedCategory = localStorage.getItem('selectedCategory');
+      if(savedCategory){
+        $(".analysis-category").val(savedCategory);
+        $(".hidden-category").val(savedCategory);
+      } else {
+        localStorage.setItem('selectedCategory', initialCategory);
+      }
+      var savedTipo = localStorage.getItem('selectedTipo');
+      if(savedTipo){
+        $("#global_tipo").val(savedTipo);
+        $(".global-tipo").val(savedTipo);
+      } else {
+        localStorage.setItem('selectedTipo', initialTipo);
+      }
+
+      // Sincronización de campos hidden para municipio (aplica tanto al menú como a secciones)
+      const storedMunicipio = localStorage.getItem("municipioSelected");
+      if (storedMunicipio) {
+        $('#municipio').val(storedMunicipio);
+      }
+      $('.hidden-municipio').val($('#municipio').val());
+      $('#municipio').on('change', function() {
+        const municipioSeleccionado = $(this).val();
+        localStorage.setItem("municipioSelected", municipioSeleccionado);
+        $('.hidden-municipio').val(municipioSeleccionado);
+      });
+
+      // Función para actualizar los cuadros de análisis en Análisis Mensual
+      function updateAnalysisCards(category) {
+        $(".analysis-card").hide(); // Oculta todas
+        if(category === "residencial"){
+          $("#card-residencial").show();
+        } else if(category === "industrial"){
+          $("#card-industrial").show();
+        } else if(category === "comercial"){
+          $("#card-comercial").show();
+        } else if(category === "oficial"){
+          $("#card-oficial").show();
+        } else {
+          $("#analysis-placeholder").html("<p>Seleccione una categoría para ver el cuadro correspondiente.</p>");
+        }
+      }
+      
+      // Al cargar la sección mensual, actualiza el cuadro mostrado
+      if($("#monthly-section").length){
+        var currentCat = $("#monthly-section .analysis-category").val().toLowerCase();
+        updateAnalysisCards(currentCat);
+      }
+      
+      // Scroll si hay hash
+      if(window.location.hash){
+        var target = $(window.location.hash);
+        if(target.length){
+          $('html, body').animate({ scrollTop: target.offset().top }, 500);
+        }
+      }
+    });
+  </script>
+  <style>
+    /* Estilos básicos */
+    .flashes { list-style: none; padding: 0; }
+    .flashes li { margin: 5px 0; }
+    #resultado { text-align: left; margin-top: 20px; }
+    /* Los cuadros de análisis se ocultan inicialmente */
+    .analysis-card { display: none; }
+
+    #header-message {
+      position: fixed;
+      top: 0;
+      left: 0;
+      background-color: #ffffcc;
+      padding: 10px;
+      z-index: 1000;
+      font-size: 18px;   /* Letra más grande */
+      font-weight: bold; /* Texto en negrita */
+      border-bottom: 1px solid #ccc;
+    }
+
+    body {
+      padding-top: 60px;
+    }
+
+    .processing-message {
+      color: #1d70b8;
+      text-align: center;
+      font-size: 1.1em;
+      margin: 20px 0;
+    }
+    
+    .success-message {
+      color: #28a745;
+      text-align: center;
+      font-size: 1.1em;
+      margin: 20px 0;
+    }
+    
+    .error-message {
+      color: #dc3545;
+      text-align: center;
+      font-size: 1.1em;
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+  <div id="header-message">
+    Recuerda revisar los Excel en cada paso del proceso para que puedas recordar que datos tienes para trabajar.
+  </div>
+  <!-- Contenedor Global de Resultados -->
+  <div id="results-container"></div>
+
+  <!-- Preloader -->
+  <div id="preloader">
+    <div class="loader">
+      <p>Bienvenidos área comercial</p>
+    </div>
+  </div>
+
+  <!-- Contenido principal (inicialmente oculto) -->
+  <div id="main-content" style="display: none;">
+    <div class="page-header">
+      <div class="logo-container">
+        <img src="./static/img/Imagen1.png" alt="Logo 1">
+        <img src="./static/img/Imagen2.png" alt="Logo 2">
+      </div>
+      <h1>Procesamiento de Informes</h1>
+    </div>
+
+    <!-- MENÚ PRINCIPAL -->
+    <div class="menu-container">
+      <form method="get" action="/select_option" id="main-menu-form">
+        <h2>Seleccione una opción</h2>
+        <select name="option" id="option" class="select-centro" onchange="this.form.submit()">
+          <option value="prepare" >Preparar Datos</option>
+          <option value="monthly" >Análisis Mensual</option>
+          <option value="bimonthly" >Análisis Bimestral</option>
+          <option value="quarterly" selected>Análisis Trimestral</option>
+        </select>
+      </form>
+    </div>
+
+    <!-- Contenedor para resultados AJAX -->
+    <div id="resultado" class="results-container"></div>
+
+    <!-- Bloque para flash messages -->
+    
+      
+    
+
+    <!-- Sección para "prepare" -->
+    
+    <div class="container" id="trimestrales">
+      <div class="main-wrapper">
+        <div class="municipio-section">
+          <h2>Selección de Municipio y Categoría</h2>
+          <label for="municipio">Seleccione el municipio:</label>
+          <select name="municipio" id="municipio">
+            
+              <option value="Guacarí">Guacarí</option>
+            
+              <option value="Jamundí">Jamundí</option>
+            
+              <option value="El Cerrito">El Cerrito</option>
+            
+              <option value="Quimbaya">Quimbaya</option>
+            
+              <option value="Circasia">Circasia</option>
+            
+              <option value="Puerto Asís">Puerto Asís</option>
+            
+              <option value="Jericó">Jericó</option>
+            
+              <option value="Ciudad Bolívar">Ciudad Bolívar</option>
+            
+              <option value="Pueblorico">Pueblorico</option>
+            
+              <option value="Tarso">Tarso</option>
+            
+              <option value="Santa Bárbara">Santa Bárbara</option>
+            
+          </select>
+          <label for="global_category">Seleccione la categoría:</label>
+          <select name="global_category" id="global_category" class="analysis-category" onchange="this.form.submit()">
+            <option value="Residencial">Residencial</option>
+            <option value="Industrial">Industrial</option>
+            <option value="Comercial">Comercial</option>
+            <option value="Oficial">Oficial</option>
+          </select>
+        </div>
+        <div class="right-content">
+          <div class="process-section general-box">
+            <h2>Análisis Trimestral</h2>
+            <form class="ajax-form" action="/step20" method="post">
+              <input type="hidden" name="municipio" class="hidden-municipio" value="">
+              <button class="main-button" type="submit">Filtrar Registros Trimestrales</button>
+            </form>
+            <form class="ajax-form" action="/step21" method="post">
+              <input type="hidden" name="municipio" class="hidden-municipio" value="">
+              <input type="hidden" name="category" class="hidden-category" value="">
+              <button type="submit">Filtrar datos por tipo de usuario</button>
+            </form>
+            <form class="ajax-form" action="/step22" method="post">
+              <input type="hidden" name="municipio" class="hidden-municipio" value="">
+              <input type="hidden" name="category" class="hidden-category" value="">
+              <button type="submit">Generar Promedios Semestrales</button>
+            </form>
+            <form class="ajax-form" action="/step23" method="post">
+              <input type="hidden" name="municipio" class="hidden-municipio" value="">
+              <input type="hidden" name="category" class="hidden-category" value="">
+              <button type="submit">Calcular cambios Logarítmicos</button>
+            </form>
+            <div class="campana-forms">
+              <form id="form-step16" action="/step24" method="POST" target="_blank">
+                <h3>Crear Campana de GAUSS para datos Globales</h3>
+                <input type="hidden" name="municipio" class="hidden-municipio" value="">
+                <input type="hidden" name="category" class="hidden-category" value="">
+                <label for="anio_inicio">Año de inicio:</label>
+                <input type="number" id="anio_inicio" name="anio_inicio" min="1900" placeholder="2018" required>
+                <label for="anios_excluir">Años a excluir:</label>
+                <input type="text" id="anios_excluir" name="anios_excluir" value="NINGUNO">
+                <button type="submit">Crear Campana de GAUSS</button>
+              </form>
+              <div class="process-section">
+                <form class="ajax-form" id="step17Form" action="/step25" method="post">
+                  <h3>Análisis de reducción de consumo</h3>
+                  <input type="hidden" name="municipio" class="hidden-municipio" value="">
+                  <input type="hidden" name="category" class="hidden-category" value=""> 
+                  <input type="hidden" name="global_tipo" class="global-tipo">
+                  <label for="anio_inicio">Año de inicio:</label>
+                  <input type="number" id="anio_inicio" name="anio_inicio" min="1900" placeholder="2018" required>
+                  <br><br>
+                  <label for="umbral_reduccion_minima">Umbral de reducción mínima (%):</label>
+                  <input type="number" id="umbral_reduccion_minima" min="0" name="umbral_reduccion_minima" min="0" required>
+                  <br><br>
+                  <label for="anios_excluir">Años a excluir:</label>
+                  <input type="text" id="anios_excluir" name="anios_excluir" value="NINGUNO">
+                  <br><br>
+                  <button type="submit">Ejecutar análisis de reducción de consumo</button>
+                </form>
+                <div id="result" style="margin-top:20px;"></div>
+                <div class="charts-forms">
+                  <form id="form-step18" action="/step26" method="post" target="_blank">
+                    <h3>Generar todos los gráficos con reducciones</h3>
+                    <input type="hidden" name="municipio" class="hidden-municipio" value="">
+                    <input type="hidden" name="category" class="hidden-category" value="">
+                    <input type="hidden" name="global_tipo" class="global-tipo">
+                    <label for="anio_inicio_18">Año de inicio:</label>
+                    <input type="number" name="anio_inicio" id="anio_inicio_18" placeholder="2018" required>
+                    <br><br>
+                    <label for="anios_excluir_18">Años a excluir:</label>
+                    <input type="text" name="anios_excluir" id="anios_excluir_18" value="NINGUNO" required>
+                    <br><br>
+                    <button type="submit">Generar Gráficos</button>
+                  </form>
+                  <form id="form-step19" action="/step27" method="post" target="_blank">
+                    <h3>Generar gráfico individual con reducciones</h3>
+                    <input type="hidden" name="municipio" class="hidden-municipio" value="">
+                    <input type="hidden" name="category" class="hidden-category" value="">
+                    <input type="hidden" name="global_tipo" class="global-tipo">
+                    <label for="anio_inicio_19">Año de inicio:</label>
+                    <input type="number" name="anio_inicio" id="anio_inicio_19" placeholder="2018" required>
+                    <br><br>
+                    <label for="anios_excluir_19">Años a excluir:</label>
+                    <input type="text" name="anios_excluir" id="anios_excluir_19" value="NINGUNO" required>
+                    <br><br>
+                    <label for="id_interes">ID de interés (opcional):</label>
+                    <input type="text" name="id_interes" id="id_interes">
+                    <br><br>
+                    <button type="submit">Generar Gráfico Individual</button>
+                  </form>
+                  
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <a href="https://alumbrados.sharepoint.com/:b:/r/sites/CanalesContactos1.0/Documentos%20compartidos/02.%20Gesti%C3%B3n%20del%20conocimiento/11.%20G.%20Comercial/01.%20Documentos/12.%20Instructivo%20uso%20de%20c%C3%B3digo%20automatizados%20de%20consumo.pdf?csf=1&web=1&e=C4JvfQ" target="_blank"
+          style="display: inline-block; background-color: yellow; color: black; padding: 10px 20px; text-decoration: none; border: none; border-radius: 5px; font-size: 16px; font-weight: bold;">
+          Instructivo
+        </a>
+      </div>
+
+    
+
+  </div>
+  
+  <!-- Overlay de progreso -->
+  <div id="progress-overlay">
+    <div id="progress-container">
+      <div class="spinner"></div>
+      <div class="progress-bar"></div>
+      <p>Procesando, por favor espere...</p>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="./static/script.js"></script>
+  
+  <!-- Footer -->
+  <footer class="footer">
+      <p>Desarrollado por Alexsandra Ortiz</p>
+  </footer>
+</body>
+</html>

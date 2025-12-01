@@ -1,0 +1,803 @@
+/* ==========================================================================
+   PRELOADER & LOADING STATES
+   ==========================================================================
+*/
+#preloader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #1d70b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  transition: opacity 0.5s ease-out;
+}
+
+.loader p {
+  font-size: 2.5em;
+  color: white;
+  animation: fadeInOut 2s infinite;
+}
+
+#progress-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.9);
+  z-index: 9998;
+  align-items: center;
+  justify-content: center;
+}
+
+#progress-container {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  text-align: center;
+  max-width: 90%;
+  width: 400px;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  margin: 0 auto 15px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #1d70b8;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* ==========================================================================
+   BASE & GLOBAL STYLES
+   ==========================================================================
+*/
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow-x: hidden;
+  background: #f8f9fa;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #2c3e50;
+  line-height: 1.6;
+  padding: 0;
+  animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================================================
+   HEADER & NAVIGATION
+   ==========================================================================
+*/
+#header-message {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background-color: #fff3cd;
+  padding: 12px 20px;
+  z-index: 1000;
+  font-size: 16px;
+  font-weight: 500;
+  border-bottom: 1px solid #ffeeba;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* ==========================================================================
+   MAIN CONTENT LAYOUT
+   ==========================================================================
+*/
+#main-content {
+  padding: 80px 20px 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+  min-height: 100vh;
+  padding-bottom: 60px;
+}
+
+.main-wrapper {
+  display: flex;
+  gap: 30px;
+  align-items: flex-start;
+  margin-top: 20px;
+}
+
+.page-header {
+  text-align: center;
+  margin-bottom: 30px;
+  position: relative;
+}
+
+.page-header h1 {
+  color: #1d70b8;
+  font-size: 2em;
+  margin: 20px 0;
+  text-align: center;
+}
+
+.menu-container {
+  max-width: 600px;
+  margin: 0 auto;
+  text-align: center;
+  padding: 0 20px;
+}
+
+.menu-container h2 {
+  color: #1d70b8;
+  font-size: 1.4em;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.select-centro {
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  display: block;
+}
+
+/* Eliminar estilos que puedan interferir con la alineación */
+#main-menu h2 {
+  margin-left: 0;
+}
+
+/* ==========================================================================
+   MUNICIPIO SECTION
+   ==========================================================================
+*/
+.municipio-section {
+  position: sticky;
+  top: 100px;
+  width: 300px;
+  background: #fff;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
+}
+
+.municipio-section h2 {
+  color: #1d70b8;
+  font-size: 1.3em;
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+/* ==========================================================================
+   BUTTONS & INTERACTIVE ELEMENTS
+   ==========================================================================
+*/
+button {
+  background: linear-gradient(135deg, #1d70b8, #155a8a);
+  color: white;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  display: block;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+button:hover {
+  background: linear-gradient(135deg, #155a8a, #0e4873);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+button.light-blue-btn {
+  background: #add8e6 !important;
+  color: #000 !important;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+button.light-blue-btn:hover {
+  background: #9acde8 !important;
+}
+
+/* ==========================================================================
+   FORMS & INPUTS
+   ==========================================================================
+*/
+.general-box,
+.prepare-box {
+  flex: 1;
+  background: #fff;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  margin-bottom: 40px;
+}
+
+.general-box h2,
+.prepare-box h2 {
+  color: #1d70b8;
+  font-size: 1.4em;
+  margin-bottom: 35px;
+  text-align: center;
+}
+
+/* Estilos para formularios */
+form {
+  margin-bottom: 30px;
+  padding: 25px;
+  background: #f8f9fa;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+form h3 {
+  color: #1d70b8;
+  font-size: 1.2em;
+  margin-bottom: 25px;
+  text-align: center;
+}
+
+/* Estilos para labels */
+label {
+  display: block;
+  margin: 20px 0 8px;
+  font-size: 1em;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+/* Estilos para inputs y selects */
+select,
+input[type="number"],
+input[type="text"] {
+  width: 100%;
+  max-width: 300px;
+  padding: 12px 15px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1em;
+  margin: 0 auto 25px;
+  display: block;
+  transition: all 0.3s ease;
+  background: #fff;
+}
+
+select {
+  cursor: pointer;
+  text-align: center;
+  font-weight: 600;
+  appearance: none;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="black"><path d="M7 10l5 5 5-5z"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 18px;
+  padding-right: 35px;
+}
+
+select:focus,
+input[type="number"]:focus,
+input[type="text"]:focus {
+  border-color: #1d70b8;
+  box-shadow: 0 0 0 3px rgba(29,112,184,0.1);
+  outline: none;
+}
+
+/* Estilos para contenedores de formularios */
+.analysis-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+  margin: 40px auto;
+  max-width: 1200px;
+  padding: 0 20px;
+}
+
+.analysis-card {
+  background: #fff;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  border: 1px solid #e0e0e0;
+  margin: 0 auto;
+  max-width: 400px;
+}
+
+.forms-row-910 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+  margin: 40px auto;
+  max-width: 1200px;
+  padding: 0 20px;
+}
+
+#form-step9,
+#form-step10 {
+  background: #fff;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  margin: 0 auto;
+  max-width: 400px;
+}
+
+/* Estilos para botones dentro de formularios */
+form button {
+  margin-top: 30px;
+  width: 100%;
+  max-width: 300px;
+}
+
+/* Estilos para mensajes de ayuda o notas */
+.form-note {
+  font-size: 0.9em;
+  color: #666;
+  margin: 15px 0;
+  text-align: center;
+}
+
+/* Estilos para grupos de botones */
+.button-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  margin: 20px 0;
+  width: 100%;
+}
+
+.button-group form {
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+/* Ajustes para dispositivos móviles */
+@media (max-width: 768px) {
+  .general-box,
+  .prepare-box {
+    padding: 20px;
+  }
+
+  form {
+    padding: 20px;
+  }
+
+  .analysis-container,
+  .forms-row-910 {
+    gap: 20px;
+    padding: 0 10px;
+  }
+
+  select,
+  input[type="number"],
+  input[type="text"] {
+    max-width: 100%;
+  }
+
+  button {
+    padding: 10px 15px;
+  }
+}
+
+/* ==========================================================================
+   LOGO CONTAINER
+   ==========================================================================
+*/
+.logo-container {
+  position: fixed;
+  top: 40px;
+  right: 20px;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  z-index: 1001;
+}
+
+.logo-container img {
+  height: 60px;
+  width: auto;
+}
+
+/* ==========================================================================
+   PROGRESS OVERLAY
+   ==========================================================================
+*/
+#progress-overlay {
+  background: rgba(255,255,255,0.9);
+}
+
+#progress-container {
+  background: #fff;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+
+/* ==========================================================================
+   RESPONSIVE ADJUSTMENTS
+   ==========================================================================
+*/
+@media (max-width: 1200px) {
+  .main-wrapper {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .municipio-section {
+    position: relative;
+    top: 0;
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto 30px;
+  }
+  
+  .logo-container {
+    position: relative;
+    top: 0;
+    right: 0;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  #main-content {
+    padding: 60px 15px 15px;
+  }
+  
+  .page-header h1 {
+    font-size: 1.5em;
+  }
+}
+
+/* ==========================================================================
+   WRAPPERS & CONTENEDORES PRINCIPALES
+   ==========================================================================
+*/
+.content-section {
+  flex: 1;
+  padding: 20px;
+  background: #f9f9f9;
+}
+
+.right-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-left: 20px;
+  margin-top: 40px;
+}
+
+.container {
+  position: relative;
+  max-width: 100%;
+  background: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transition: transform 0.3s ease-in-out;
+}
+
+.container:hover {
+  transform: scale(1.01);
+}
+
+/* ==========================================================================
+   ENCABEZADOS & TEXTOS
+   ==========================================================================
+*/
+h1, h2 {
+  color: #1d70b8;
+  text-align: center;
+  font-size: 1.4em;
+  font-weight: bold;
+}
+
+h3 {
+  color: #1d70b8;
+  text-align: center;
+  font-size: 1.2em;
+  font-weight: bold;
+  margin: 10px 0;
+}
+
+/* ==========================================================================
+   FORMULARIOS (CARDS, CAMPANA, CHARTS, ETC.)
+   ==========================================================================
+*/
+/* Formularios generales */
+#form-step7,
+#reduction-form,
+#reduction-form-indus,
+#reduction-form-comer,
+#forms-row-910,
+#form-step9,
+#form-step10,
+#form-step16par,
+#form-step16impar,
+#step17Form,
+#form-step18,
+#form-step19 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #f9f9f9;
+  padding: 18px;
+  border-radius: 10px;
+  width: 100%;
+  max-width: 300px;
+  margin: 15px auto;
+  text-align: center;
+  box-shadow: 0 3px 7px rgba(0,0,0,0.15);
+}
+
+#form-step7,
+#reduction-form,
+#reduction-form-indus,
+#reduction-form-comer,
+#forms-row-910,
+#form-step9,
+#form-step10,
+#form-step16par,
+#form-step16impar,
+#step17Form,
+#form-step18,
+#form-step19 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #f9f9f9;
+  padding: 18px;
+  border-radius: 10px;
+  width: 100%;
+  max-width: 300px;
+  margin: 15px auto;
+  text-align: center;
+  box-shadow: 0 3px 7px rgba(0,0,0,0.15);
+}
+
+#form-step7 input,
+#reduction-form input,
+#reduction-form-indus input,
+#reduction-form-comer input,
+#forms-row-910 input,
+#form-step9 input,
+#form-step10 input,
+#form-step16par input,
+#form-step16impar input,
+#step17Form input,
+#form-step18 input,
+#form-step19 input {
+  width: 90%;
+  max-width: 300px;
+  padding: 8px;
+  font-size: 0.95em;
+  border-radius: 6px;
+  transition: all 0.3s ease-in-out;
+  text-align: center;
+}
+
+/* Formularios de campana y charts */
+.campana-forms,
+.charts-forms {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+/* Formularios estilo "card" para charts */
+.charts-form {
+  flex: 1 1 300px;
+  max-width: 320px;
+  background: #fafafa;
+  padding: 20px;
+  border: 2px solid #1d70b8;
+  border-radius: 10px;
+  box-shadow: 0 3px 7px rgba(0,0,0,0.15);
+  text-align: center;
+}
+
+/* ==========================================================================
+   DUAL CONTAINER Y SECCIONES (OPCIONAL)
+   ==========================================================================
+*/
+.dual-container {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: space-around;
+  gap: 20px;
+  max-width: 1200px;
+  margin: auto;
+}
+
+.dual-section {
+  flex: 1;
+  width: 100%;
+  border: 2px solid #1d70b8;
+  padding: 18px;
+  border-radius: 10px;
+  background: #fafafa;
+  animation: fadeIn 1s ease-in;
+  text-align: center;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+  transition: all 0.3s ease-in-out;
+}
+
+.dual-section:hover {
+  transform: scale(1.02);
+}
+
+.dual-section h2 {
+  color: #1d70b8;
+  font-size: 1.2em;
+  font-weight: bold;
+  margin-bottom: 12px;
+}
+
+.dual-section form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.dual-section button {
+  width: 100%;
+  max-width: 320px;
+  padding: 10px;
+  font-size: 0.95em;
+  font-weight: bold;
+  border-radius: 6px;
+  transition: all 0.3s ease-in-out;
+  margin-bottom: 6px;
+}
+
+.dual-section button:hover {
+  background: linear-gradient(135deg, #155a8a, #0e4873);
+  transform: scale(1.05);
+}
+
+.dual-section button:active {
+  transform: scale(0.98);
+}
+
+/* Botones en línea */
+.button-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0;
+}
+
+.button-group form {
+  display: block;
+  width: 100%;
+  text-align: center;
+  margin: 10px 0;
+}
+
+.button-group form button {
+  width: auto;
+  margin: 10px 0;
+}
+
+.button-group button {
+  width: auto;
+  padding: 10px 15px;
+  font-size: 1em;
+  margin: 10px 0;
+}
+
+/* ==========================================================================
+   EXPLANATION BOX
+   ==========================================================================
+*/
+#explanation-box {
+  display: none;
+  margin-top: 10px;
+  padding: 15px;
+  border: 1px solid #1d70b8;
+  border-radius: 10px;
+  background: #e9f7fd;
+}
+
+.progress-bar {
+  position: relative;
+  height: 8px;
+  background: #eee;
+  border-radius: 5px;
+  overflow: hidden;
+  margin: 12px 0;
+}
+
+.progress-bar::before {
+  content: "";
+  position: absolute;
+  left: -40%;
+  width: 40%;
+  height: 100%;
+  background-color: #1d70b8;
+  animation: progress 1.5s linear infinite;
+}
+
+@keyframes progress {
+  0% { left: -40%; }
+  100% { left: 100%; }
+}
+
+.campana-forms {
+  display: flex;
+  flex-direction: column; /* O row, según cómo quieras que se organicen los elementos */
+  align-items: center;    /* Centra horizontalmente los elementos hijos */
+  justify-content: center;/* Centra verticalmente (útil si el contenedor tiene una altura definida) */
+  margin: 0 auto;         /* Centra el contenedor en su contenedor padre */
+}
+
+/* Opcional: si deseas que el formulario tenga un ancho máximo y quede centrado */
+.campana-forms form {
+  width: 100%;
+  max-width: 400px;  /* Ajusta este valor según lo necesites */
+  margin: 0 auto;    /* Centra el formulario */
+  padding: 20px;
+  border: 2px solid #1d70b8;
+  border-radius: 10px;
+  background: #fafafa;
+  box-shadow: 0 3px 7px rgba(0,0,0,0.15);
+  text-align: center;
+}
+
+/* ==========================================================================
+   FOOTER
+   ==========================================================================
+*/
+.footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: #1d70b8;
+  color: white;
+  text-align: center;
+  padding: 10px 0;
+  font-size: 0.9em;
+  z-index: 1000;
+  box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+}
+
+.footer p {
+  margin: 0;
+  padding: 0;
+}
