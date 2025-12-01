@@ -1,0 +1,32 @@
+{
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "builds": [
+    { "src": "vercel-frontend/**/*.html", "use": "@vercel/static" },
+    { "src": "vercel-frontend/static/**", "use": "@vercel/static" }
+  ],
+  "routes": [
+    {
+      "src": "/",
+      "has": [{ "type": "query", "key": "selected_option", "value": "prepare" }],
+      "dest": "/vercel-frontend/prepare.html"
+    },
+    {
+      "src": "/",
+      "has": [{ "type": "query", "key": "selected_option", "value": "monthly" }],
+      "dest": "/vercel-frontend/monthly.html"
+    },
+    {
+      "src": "/",
+      "has": [{ "type": "query", "key": "selected_option", "value": "bimonthly" }],
+      "dest": "/vercel-frontend/bimonthly.html"
+    },
+    {
+      "src": "/",
+      "has": [{ "type": "query", "key": "selected_option", "value": "quarterly" }],
+      "dest": "/vercel-frontend/quarterly.html"
+    },
+    { "src": "/static/(.*)", "dest": "/vercel-frontend/static/$1" },
+    { "src": "/(.*)", "dest": "/vercel-frontend/index.html" }
+  ]
+}
